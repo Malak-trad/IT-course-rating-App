@@ -1,1 +1,0 @@
-# IT-course-rating-App
