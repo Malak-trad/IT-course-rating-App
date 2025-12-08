@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Educational Resources Rating System - University of Algiers</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="header">
+        <nav class="navbar">
+            <div class="nav-container">
+                <div class="logo">
+                    <i class="fas fa-book-open"></i>
+                    <span>EduRating System</span>
+                </div>
+                
+                <ul class="nav-menu">
+                    <li class="nav-item"><a href="#home" class="nav-link active">Home</a></li>
+                    <li class="nav-item"><a href="#subjects" class="nav-link">Subjects</a></li>
+                    <li class="nav-item"><a href="#reviews" class="nav-link">Reviews</a></li>
+                    <li class="nav-item"><a href="#levels" class="nav-link">Academic Levels</a></li>
+                    <li class="nav-item"><a href="#specializations" class="nav-link">Specializations</a></li>
+                </ul>
+                
+                <div class="auth-buttons">
+                    <button class="btn btn-login" id="loginBtn">Login</button>
+                    <button class="btn btn-register" id="registerBtn">Register</button>
+                </div>
+                
+                <div class="user-menu hidden" id="userMenu">
+                    <div class="user-info">
+                        <i class="fas fa-user-circle"></i>
+                        <span id="userName">User</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </div>
+                    <div class="dropdown-menu">
+                        <a href="#profile"><i class="fas fa-user"></i> Profile</a>
+                        <a href="#my-reviews"><i class="fas fa-star"></i> My Reviews</a>
+                        <a href="admin-dashboard.html" class="admin-only hidden"><i class="fas fa-cog"></i> Admin Dashboard</a>
+                        <a href="#" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+                    </div>
+                </div>
+                
+                <div class="hamburger">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Section -->
+    <main>
+        <section class="hero" id="home">
+            <div class="hero-content">
+                <h1 class="hero-title">University of Algiers - Computer Science Department</h1>
+                <p class="hero-description">
+                    A comprehensive platform for Computer Science students to share experiences and rate educational resources 
+                    according to the university curriculum. Find the best resources for your specialization and level.
+                </p>
+                <div class="hero-buttons">
+                    <button class="btn btn-primary" id="exploreBtn">Explore Subjects</button>
+                    <button class="btn btn-secondary" id="addReviewBtn">Share Your Experience</button>
+                </div>
+            </div>
+            <div class="hero-image">
+                <img src="https://cdn.pixabay.com/photo/2018/09/27/09/22/artificial-intelligence-3706562_1280.jpg" alt="Computer Science Education">
+            </div>
+        </section>
+
+        <!-- Academic Levels Section -->
+        <section class="levels-section" id="levels">
+            <h2 class="section-title">Academic Structure</h2>
+            <p class="section-subtitle">University of Algiers follows the LMD system (License-Master-Doctorate)</p>
+            
+            <div class="levels-container">
+                <div class="level-card" data-level="license">
+                    <div class="level-icon">
+                        <i class="fas fa-graduation-cap"></i>
+                    </div>
+                    <h3 class="level-title">License (Bachelor)</h3>
+                    <p class="level-description">3-year undergraduate program (L1, L2, L3) in Computer Science</p>
+                    <span class="subject-count">45 ECTS per year</span>
+                </div>
+                
+                <div class="level-card" data-level="master">
+                    <div class="level-icon">
+                        <i class="fas fa-user-graduate"></i>
+                    </div>
+                    <h3 class="level-title">Master</h3>
+                    <p class="level-description">2-year graduate program (M1, M2) with specializations</p>
+                    <span class="subject-count">60 ECTS total</span>
+                </div>
+                
+                <div class="level-card" data-level="specializations">
+                    <div class="level-icon">
+                        <i class="fas fa-laptop-code"></i>
+                    </div>
+                    <h3 class="level-title">Specializations</h3>
+                    <p class="level-description">Software Engineering, AI, Networks, Data Science</p>
+                    <span class="subject-count">4 tracks</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Specializations Section -->
+        <section class="specializations-section" id="specializations">
+            <h2 class="section-title">Available Specializations</h2>
+            <p class="section-subtitle">Computer Science Department offers these specializations</p>
+            
+            <div class="levels-container">
+                <div class="specialization-card">
+                    <div class="specialization-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <h3 class="specialization-title">Software Engineering</h3>
+                    <p class="specialization-description">Focus on software development, testing, and project management</p>
+                    <span class="subject-count">12 core subjects</span>
+                </div>
+                
+                <div class="specialization-card">
+                    <div class="specialization-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <h3 class="specialization-title">Artificial Intelligence</h3>
+                    <p class="specialization-description">Machine learning, neural networks, and intelligent systems</p>
+                    <span class="subject-count">10 core subjects</span>
+                </div>
+                
+                <div class="specialization-card">
+                    <div class="specialization-icon">
+                        <i class="fas fa-network-wired"></i>
+                    </div>
+                    <h3 class="specialization-title">Computer Networks</h3>
+                    <p class="specialization-description">Network architecture, security, and distributed systems</p>
+                    <span class="subject-count">9 core subjects</span>
+                </div>
+                
+                <div class="specialization-card">
+                    <div class="specialization-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
+                    <h3 class="specialization-title">Data Science</h3>
+                    <p class="specialization-description">Big data, data mining, and business intelligence</p>
+                    <span class="subject-count">11 core subjects</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Subjects Section -->
+        <section class="subjects-section" id="subjects">
+            <h2 class="section-title">Academic Subjects</h2>
+            <p class="section-subtitle">Browse subjects by level, semester, and specialization</p>
+            
+            <div class="filter-container">
+                <div class="filter">
+                    <label for="levelFilter">Academic Level:</label>
+                    <select id="levelFilter">
+                        <option value="all">All Levels</option>
+                        <option value="L1">License 1</option>
+                        <option value="L2">License 2</option>
+                        <option value="L3">License 3</option>
+                        <option value="M1">Master 1</option>
+                        <option value="M2">Master 2</option>
+                    </select>
+                </div>
+                
+                <div class="filter">
+                    <label for="semesterFilter">Semester:</label>
+                    <select id="semesterFilter">
+                        <option value="all">Both Semesters</option>
+                        <option value="S1">Semester 1</option>
+                        <option value="S2">Semester 2</option>
+                    </select>
+                </div>
+                
+                <div class="filter">
+                    <label for="sortFilter">Sort by:</label>
+                    <select id="sortFilter">
+                        <option value="rating">Highest Rating</option>
+                        <option value="difficulty">Difficulty</option>
+                        <option value="name">Name</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="subjects-container" id="subjectsContainer">
+                <!-- Will be populated dynamically using JavaScript -->
+            </div>
+            
+            <div class="load-more">
+                <button class="btn btn-outline" id="loadMoreBtn">Load More Subjects</button>
+            </div>
+        </section>
+
+        <!-- Add Review Section -->
+        <section class="add-review-section" id="addReview">
+            <h2 class="section-title">Share Your Experience</h2>
+            <p class="section-subtitle">Help fellow students by sharing your insights about subjects</p>
+            
+            <div class="review-form-container">
+                <form class="review-form" id="reviewForm">
+                    <div class="form-group">
+                        <label for="subjectSelect">Select Subject:</label>
+                        <select id="subjectSelect" required>
+                            <option value="">-- Select a Subject --</option>
+                            <!-- Options will be populated dynamically -->
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Overall Rating:</label>
+                        <div class="star-rating">
+                            <i class="far fa-star" data-rating="1"></i>
+                            <i class="far fa-star" data-rating="2"></i>
+                            <i class="far fa-star" data-rating="3"></i>
+                            <i class="far fa-star" data-rating="4"></i>
+                            <i class="far fa-star" data-rating="5"></i>
+                        </div>
+                        <input type="hidden" id="ratingValue" value="0">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reviewTitle">Review Title:</label>
+                        <input type="text" id="reviewTitle" placeholder="Brief summary of your experience" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="reviewText">Detailed Review:</label>
+                        <textarea id="reviewText" rows="5" placeholder="Share your experience, challenges, study methods, and advice for other students..." required></textarea>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="resources">Useful Resources:</label>
+                            <textarea id="resources" rows="3" placeholder="Books, websites, videos that helped you"></textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="professorRating">Professor Rating (1-5):</label>
+                            <select id="professorRating">
+                                <option value="0">Not rated</option>
+                                <option value="1">1 - Very poor</option>
+                                <option value="2">2 - Poor</option>
+                                <option value="3">3 - Average</option>
+                                <option value="4">4 - Good</option>
+                                <option value="5">5 - Excellent</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="difficulty">Subject Difficulty:</label>
+                        <select id="difficulty">
+                            <option value="easy">Easy (1-2 hours/week)</option>
+                            <option value="medium" selected>Medium (3-4 hours/week)</option>
+                            <option value="hard">Hard (5-6 hours/week)</option>
+                            <option value="very-hard">Very Hard (7+ hours/week)</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-buttons">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-paper-plane"></i> Submit Review
+                        </button>
+                        <button type="reset" class="btn btn-outline">Clear Form</button>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <!-- Recent Reviews Section -->
+        <section class="reviews-section" id="reviews">
+            <h2 class="section-title">Recent Student Reviews</h2>
+            <p class="section-subtitle">See what other students are saying about their courses</p>
+            
+            <div class="reviews-container" id="reviewsContainer">
+                <!-- Will be populated dynamically using JavaScript -->
+            </div>
+        </section>
+
+        <!-- Authentication Modal -->
+        <section class="auth-modal hidden" id="authModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 id="modalTitle">Welcome to EduRating</h2>
+                    <button class="close-modal" id="closeModal">&times;</button>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="auth-container">
+                        <!-- Login Form -->
+                        <div class="auth-form-container active" id="loginFormContainer">
+                            <h3 class="auth-form-title">Login to Your Account</h3>
+                            <p class="auth-form-subtitle">Access your reviews and preferences</p>
+                            
+                            <form class="auth-form" id="loginForm">
+                                <div class="form-group">
+                                    <div class="input-with-icon">
+                                        <i class="fas fa-envelope"></i>
+                                        <input type="email" id="loginEmail" placeholder="University Email" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <div class="input-with-icon">
+                                        <i class="fas fa-lock"></i>
+                                        <input type="password" id="loginPassword" placeholder="Password" required>
+                                        <button type="button" class="show-password" id="showLoginPassword">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-options">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="rememberMe">
+                                        <span>Remember me on this device</span>
+                                    </label>
+                                    <a href="#forgot-password" class="forgot-password">Forgot Password?</a>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fas fa-sign-in-alt"></i> Login to Account
+                                </button>
+                                
+                                <div class="auth-divider">
+                                    <span>or continue with</span>
+                                </div>
+                                
+                                <div class="social-auth">
+                                    <button type="button" class="btn-social google">
+                                        <i class="fab fa-google"></i> University Google
+                                    </button>
+                                    <button type="button" class="btn-social microsoft">
+                                        <i class="fab fa-microsoft"></i> Office 365
+                                    </button>
+                                </div>
+                                
+                                <p class="auth-switch">
+                                    Don't have an account? 
+                                    <a href="#" class="switch-auth" data-target="register">Create Student Account</a>
+                                </p>
+                            </form>
+                        </div>
+                        
+                        <!-- Register Form -->
+                        <div class="auth-form-container" id="registerFormContainer">
+                            <h3 class="auth-form-title">Create Student Account</h3>
+                            <p class="auth-form-subtitle">Join the university rating community</p>
+                            
+                            <form class="auth-form" id="registerForm">
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <div class="input-with-icon">
+                                            <i class="fas fa-user"></i>
+                                            <input type="text" id="registerFirstName" placeholder="First Name" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <div class="input-with-icon">
+                                            <i class="fas fa-user"></i>
+                                            <input type="text" id="registerLastName" placeholder="Last Name" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <div class="input-with-icon">
+                                        <i class="fas fa-id-card"></i>
+                                        <input type="text" id="registerStudentId" placeholder="Student ID Number" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group">
+                                    <div class="input-with-icon">
+                                        <i class="fas fa-envelope"></i>
+                                        <input type="email" id="registerEmail" placeholder="University Email" required>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <div class="input-with-icon">
+                                            <i class="fas fa-lock"></i>
+                                            <input type="password" id="registerPassword" placeholder="Password" required>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <div class="input-with-icon">
+                                            <i class="fas fa-lock"></i>
+                                            <input type="password" id="registerConfirmPassword" placeholder="Confirm Password" required>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <div class="input-with-icon">
+                                            <i class="fas fa-graduation-cap"></i>
+                                            <select id="registerLevel" required>
+                                                <option value="">Academic Level</option>
+                                                <option value="L1">License 1</option>
+                                                <option value="L2">License 2</option>
+                                                <option value="L3">License 3</option>
+                                                <option value="M1">Master 1</option>
+                                                <option value="M2">Master 2</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <div class="input-with-icon">
+                                            <i class="fas fa-laptop-code"></i>
+                                            <select id="registerSpecialization">
+                                                <option value="">Specialization (Optional)</option>
+                                                <option value="SE">Software Engineering</option>
+                                                <option value="AI">Artificial Intelligence</option>
+                                                <option value="CN">Computer Networks</option>
+                                                <option value="DS">Data Science</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="form-group terms">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="acceptTerms" required>
+                                        <span>I agree to the <a href="#terms">Terms of Service</a>, <a href="#privacy">Privacy Policy</a>, and university code of conduct</span>
+                                    </label>
+                                </div>
+                                
+                                <div class="form-group terms">
+                                    <label class="checkbox-label">
+                                        <input type="checkbox" id="acceptGuidelines" required>
+                                        <span>I will provide constructive and respectful reviews</span>
+                                    </label>
+                                </div>
+                                
+                                <button type="submit" class="btn btn-primary btn-block">
+                                    <i class="fas fa-user-plus"></i> Create Student Account
+                                </button>
+                                
+                                <p class="auth-switch">
+                                    Already have an account? 
+                                    <a href="#" class="switch-auth" data-target="login">Login here</a>
+                                </p>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3 class="footer-title">EduRating System</h3>
+                <p class="footer-description">
+                    Official course rating platform for Computer Science Department, 
+                    University of Algiers. Helping students make informed academic choices.
+                </p>
+                <div class="social-icons">
+                    <a href="#"><i class="fab fa-facebook"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">Quick Links</h3>
+                <ul class="footer-links">
+                    <li><a href="#home">Home</a></li>
+                    <li><a href="#subjects">Subjects</a></li>
+                    <li><a href="#reviews">Reviews</a></li>
+                    <li><a href="#specializations">Specializations</a></li>
+                    <li><a href="#addReview">Add Review</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">Academic Levels</h3>
+                <ul class="footer-links">
+                    <li><a href="#subjects" data-filter="L1">License 1</a></li>
+                    <li><a href="#subjects" data-filter="L2">License 2</a></li>
+                    <li><a href="#subjects" data-filter="L3">License 3</a></li>
+                    <li><a href="#subjects" data-filter="M1">Master 1</a></li>
+                    <li><a href="#subjects" data-filter="M2">Master 2</a></li>
+                </ul>
+            </div>
+            
+            <div class="footer-section">
+                <h3 class="footer-title">Contact & Support</h3>
+                <ul class="footer-contact">
+                    <li><i class="fas fa-envelope"></i> edurating@univ-alger.dz</li>
+                    <li><i class="fas fa-phone"></i> +213 21 12 34 56</li>
+                    <li><i class="fas fa-map-marker-alt"></i> Computer Science Department, University of Algiers</li>
+                    <li><i class="fas fa-clock"></i> Support: Sun-Thu, 8:00-16:00</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2025 University of Algiers - Computer Science Department. All rights reserved.</p>
+            <p style="font-size: 0.8rem; margin-top: 5px;">This platform is for educational purposes and student collaboration.</p>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>

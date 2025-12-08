@@ -41,10 +41,7 @@ app.get('/', (req, res) => {
 });
 
 // الاتصال بقاعدة البيانات
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/education_rating', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
+mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/education_rating')
 .then(() => console.log('Connected to MongoDB'))
 .catch(err => console.error('MongoDB connection error:', err));
 

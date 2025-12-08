@@ -1,13 +1,19 @@
-# نظام تقييم المصادر والمواد التعليمية لطلبة الإعلام الآلي
+#  Educational system evaluation
 
 ![جامعة الجزائر](https://img.shields.io/badge/جامعة-الجزائر-blue)
 ![Node.js](https://img.shields.io/badge/Node.js-18-green)
 ![MongoDB](https://img.shields.io/badge/MongoDB-6.0-success)
 ![Docker](https://img.shields.io/badge/Docker-Compose-blue)
 
-## 📋 وصف المشروع
+## 📋 Project Definition
+Name of the project: Educational system evaluation
+Type: Application Web Full-Stack (MERN Stack)
+Domaine: Education / E-learning
+Public License: Students in Informatique (Licence 1, License 2, License 3, Master 1,Master 2)
+Language: English(Interface and content)
+Resolution problem: Difficult students discover available resources and experience with their
+university students.
 
-نظام تقييم المصادر والمواد التعليمية هو تطبيق ويب متكامل (Full-Stack) يهدف إلى مساعدة طلبة الإعلام الآلي في تبادل الخبرات حول المواد والمصادر التعليمية. يوفر النظام خدمة تصفح وتقييم المواد بناءً على المستوى الدراسي لضمان دقة التوجيه.
 
 ## ✨ المميزات الرئيسية
 
@@ -58,8 +64,8 @@
 
 ```bash
 # 1. استنساخ المشروع
-git clone https://github.com/yourusername/education-rating-system.git
-cd education-rating-system
+git clone https://github.com/Malak-trad/IT-course-rating-App.git
+cd IT-course-rating-App
 
 # 2. نسخ ملف البيئة
 cp .env.example .env
@@ -68,7 +74,7 @@ cp .env.example .env
 docker-compose up -d
 
 # 4. فتح المتصفح
-# الواجهة الأمامية: http://localhost
-# الواجهة الخلفية: http://localhost:5000
+# FRONTEND: http://localhost
+# BACKEND: http://localhost:5000
 # لوحة التحكم: http://localhost/admin-dashboard.html
-# إدارة MongoDB: http://localhost:8081 (admin/admin123)
+#  MongoDB: http://localhost:8081 (admin/admin123)

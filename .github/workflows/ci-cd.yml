@@ -2,9 +2,9 @@ name: CI/CD Pipeline
 
 on:
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
   pull_request:
-    branches: [ main ]
+    branches: [main]
   release:
     types: [published]
 
@@ -23,234 +23,232 @@ jobs:
         node-version: [18.x]
     
     steps:
-    - name: ⬇️ استنساخ الكود
-      uses: actions/checkout@v3
-    
-    - name: 🟢 تثبيت Node.js ${{ matrix.node-version }}
-      uses: actions/setup-node@v3
-      with:
-        node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-        cache-dependency-path: backend/package-lock.json
-    
-    - name: 📦 تثبيت تبعيات Backend
-      working-directory: ./backend
-      run: |
-        npm ci
-        npm audit fix
-    
-    - name: 🧪 تشغيل اختبارات Backend
-      working-directory: ./backend
-      env:
-        NODE_ENV: test
-        MONGODB_URI: mongodb://localhost:27017/test_db
-        JWT_SECRET: test-secret-key
-      run: |
-        npm test -- --coverage
-        npm run test:security
-    
-    - name: 📊 تحليل التغطية
-      uses: codecov/codecov-action@v3
-      with:
-        directory: ./backend/coverage
-        flags: backend
-        name: backend-coverage
-    
-    - name: 🔍 فحص الأمان
-      uses: snyk/actions/node@master
-      env:
-        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-      with:
-        args: --severity-threshold=high
-    
-    - name: 🔍 فحص الثغرات
-      run: |
-        npm audit --production
-      working-directory: ./backend
-    
-    - name: 📝 فحص جودة الكود
-      uses: sonarsource/sonarcloud-github-action@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-    
-    - name: 📁 فحص ملفات Frontend
-      run: |
-        echo "🔍 فحص ملفات Frontend..."
-        find ./frontend -name "*.html" -exec wc -l {} + | tail -1
-        echo "✅ تم فحص جميع الملفات"
+      - name: ⬇️ استنساخ الكود
+        uses: actions/checkout@v3
+
+      - name: 🟢 تثبيت Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+
+      - name: 📦 تثبيت تبعيات Backend
+        working-directory: ./backend
+        run: |
+          npm ci
+          npm audit fix
+
+      - name: 🧪 تشغيل اختبارات Backend
+        working-directory: ./backend
+        env:
+          NODE_ENV: test
+          MONGODB_URI: mongodb://localhost:27017/test_db
+          JWT_SECRET: test-secret-key
+        run: |
+          npm test -- --coverage
+          npm run test:security
+
+      - name: 📊 تحليل التغطية
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./backend/coverage
+          flags: backend
+          name: backend-coverage
+
+      - name: 🔍 فحص الأمان
+        uses: snyk/actions/node@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+
+      - name: 🔍 فحص الثغرات
+        working-directory: ./backend
+        run: |
+          npm audit --production
+
+      - name: 📝 فحص جودة الكود
+        uses: sonarsource/sonarcloud-github-action@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: 📁 فحص ملفات Frontend
+        run: |
+          echo "🔍 فحص ملفات Frontend..."
+          find ./frontend -name "*.html" -exec wc -l {} + | tail -1
+          echo "✅ تم فحص جميع الملفات"
 
   # بناء الصور Docker
   build-and-push:
     needs: test
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
-    
+
     steps:
-    - name: ⬇️ استنساخ الكود
-      uses: actions/checkout@v3
-    
-    - name: 🔐 تسجيل الدخول إلى GitHub Container Registry
-      uses: docker/login-action@v2
-      with:
-        registry: ${{ env.REGISTRY }}
-        username: ${{ github.actor }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-    
-    - name: 📝 استخراج Metadata
-      id: meta
-      uses: docker/metadata-action@v4
-      with:
-        images: |
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}
-          ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}
-        tags: |
-          type=ref,event=branch
-          type=ref,event=pr
-          type=semver,pattern={{version}}
-          type=semver,pattern={{major}}.{{minor}}
-          type=sha,prefix={{branch}}-
-    
-    - name: 🐳 بناء صورة Backend
-      uses: docker/build-push-action@v4
-      with:
-        context: ./backend
-        push: true
-        tags: ${{ steps.meta.outputs.tags }}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-    
-    - name: 🐳 بناء صورة Frontend
-      uses: docker/build-push-action@v4
-      with:
-        context: ./frontend
-        push: true
-        tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ github.sha }}
-        labels: ${{ steps.meta.outputs.labels }}
-        cache-from: type=gha
-        cache-to: type=gha,mode=max
-    
-    - name: 🏷️ إضافة Tags إضافية
-      run: |
-        docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:${{ github.sha }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:latest
-        docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ github.sha }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:latest
-        docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:latest
-        docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:latest
-    
-    - name: 📦 إنشاء Helm Chart
-      run: |
-        mkdir -p helm-chart/templates
-        cat > helm-chart/Chart.yaml <<EOF
-        apiVersion: v2
-        name: education-rating-system
-        description: نظام تقييم المصادر التعليمية لطلبة الإعلام الآلي
-        version: 1.0.0
-        appVersion: "${{ github.sha }}"
-        EOF
-        
-        cat > helm-chart/values.yaml <<EOF
-        replicaCount: 3
-        image:
-          repository: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}
-          tag: latest
-          pullPolicy: Always
-        service:
-          type: ClusterIP
-          port: 5000
-        ingress:
-          enabled: true
-          className: nginx
-          hosts:
-            - host: edu-rating.example.com
-              paths:
-                - path: /
-                  pathType: Prefix
-          tls: []
-        resources:
-          requests:
-            memory: "256Mi"
-            cpu: "250m"
-          limits:
-            memory: "512Mi"
-            cpu: "500m"
-        autoscaling:
-          enabled: true
-          minReplicas: 2
-          maxReplicas: 10
-          targetCPUUtilizationPercentage: 80
-        EOF
-    
-    - name: 📄 إنشاء ملف Docker Compose للإنتاج
-      run: |
-        cat > docker-compose.prod.yml <<EOF
-        version: '3.8'
-        
-        services:
-          mongodb:
-            image: mongo:6.0
-            container_name: education_rating_mongodb
-            restart: unless-stopped
-            environment:
-              MONGO_INITDB_ROOT_USERNAME: \$MONGO_INITDB_ROOT_USERNAME
-              MONGO_INITDB_ROOT_PASSWORD: \$MONGO_INITDB_ROOT_PASSWORD
-              MONGO_INITDB_DATABASE: education_rating
-            volumes:
-              - mongodb_data:/data/db
-              - ./mongodb/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
-            networks:
-              - education_network
-        
-          backend:
-            image: \${{ env.REGISTRY }}/\${{ env.IMAGE_NAME_BACKEND }}:latest
-            container_name: education_rating_backend
-            restart: unless-stopped
-            environment:
-              NODE_ENV: production
-              PORT: 5000
-              MONGODB_URI: mongodb://\$\${MONGO_INITDB_ROOT_USERNAME}:\$\${MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/education_rating?authSource=admin
-              JWT_SECRET: \$\${JWT_SECRET}
-            ports:
-              - "5000:5000"
-            volumes:
-              - backend_uploads:/usr/src/app/uploads
-            depends_on:
-              - mongodb
-            networks:
-              - education_network
-        
-          frontend:
-            image: \${{ env.REGISTRY }}/\${{ env.IMAGE_NAME_FRONTEND }}:latest
-            container_name: education_rating_frontend
-            restart: unless-stopped
-            ports:
-              - "80:80"
-            depends_on:
-              - backend
-            networks:
-              - education_network
-        
-        networks:
-          education_network:
-            driver: bridge
-        
-        volumes:
-          mongodb_data:
-            driver: local
-          backend_uploads:
-            driver: local
-        EOF
-    
-    - name: 📤 رفع الملفات الناتجة
-      uses: actions/upload-artifact@v3
-      with:
-        name: deployment-files
-        path: |
-          docker-compose.prod.yml
-          helm-chart/
-          backend/
-          frontend/
-        retention-days: 30
+      - name: ⬇️ استنساخ الكود
+        uses: actions/checkout@v3
+
+      - name: 🔐 تسجيل الدخول إلى GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 📝 استخراج Metadata
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: |
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=sha,prefix={{branch}}-
+
+      - name: 🐳 بناء صورة Backend
+        uses: docker/build-push-action@v4
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: 🐳 بناء صورة Frontend
+        uses: docker/build-push-action@v4
+        with:
+          context: ./frontend
+          push: true
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ github.sha }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: 🏷️ إضافة Tags إضافية
+        run: |
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:${{ github.sha }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:latest
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ github.sha }} ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:latest
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:latest
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:latest
+
+      - name: 📦 إنشاء Helm Chart
+        run: |
+          mkdir -p helm-chart/templates
+          cat > helm-chart/Chart.yaml <<EOF
+          apiVersion: v2
+          name: education-rating-system
+          description: نظام تقييم المصادر التعليمية لطلبة الإعلام الآلي
+          version: 1.0.0
+          appVersion: "${{ github.sha }}"
+          EOF
+
+          cat > helm-chart/values.yaml <<EOF
+          replicaCount: 3
+          image:
+            repository: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}
+            tag: latest
+            pullPolicy: Always
+          service:
+            type: ClusterIP
+            port: 5000
+          ingress:
+            enabled: true
+            className: nginx
+            hosts:
+              - host: edu-rating.example.com
+                paths:
+                  - path: /
+                    pathType: Prefix
+            tls: []
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "250m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          autoscaling:
+            enabled: true
+            minReplicas: 2
+            maxReplicas: 10
+            targetCPUUtilizationPercentage: 80
+          EOF
+
+      - name: 📄 إنشاء ملف Docker Compose للإنتاج
+        run: |
+          cat > docker-compose.prod.yml <<EOF
+          version: '3.8'
+
+          services:
+            mongodb:
+              image: mongo:6.0
+              container_name: education_rating_mongodb
+              restart: unless-stopped
+              environment:
+                MONGO_INITDB_ROOT_USERNAME: \$MONGO_INITDB_ROOT_USERNAME
+                MONGO_INITDB_ROOT_PASSWORD: \$MONGO_INITDB_ROOT_PASSWORD
+                MONGO_INITDB_DATABASE: education_rating
+              volumes:
+                - mongodb_data:/data/db
+                - ./mongodb/init-mongo.js:/docker-entrypoint-initdb.d/init-mongo.js:ro
+              networks:
+                - education_network
+
+            backend:
+              image: \${{ env.REGISTRY }}/\${{ env.IMAGE_NAME_BACKEND }}:latest
+              container_name: education_rating_backend
+              restart: unless-stopped
+              environment:
+                NODE_ENV: production
+                PORT: 5000
+                MONGODB_URI: mongodb://\$\${MONGO_INITDB_ROOT_USERNAME}:\$\${MONGO_INITDB_ROOT_PASSWORD}@mongodb:27017/education_rating?authSource=admin
+                JWT_SECRET: \$\${JWT_SECRET}
+              ports:
+                - "5000:5000"
+              volumes:
+                - backend_uploads:/usr/src/app/uploads
+              depends_on:
+                - mongodb
+              networks:
+                - education_network
+
+            frontend:
+              image: \${{ env.REGISTRY }}/\${{ env.IMAGE_NAME_FRONTEND }}:latest
+              container_name: education_rating_frontend
+              restart: unless-stopped
+              ports:
+                - "80:80"
+              depends_on:
+                - backend
+              networks:
+                - education_network
+
+          networks:
+            education_network:
+              driver: bridge
+
+          volumes:
+            mongodb_data:
+              driver: local
+            backend_uploads:
+              driver: local
+          EOF
+
+      - name: 📤 رفع الملفات الناتجة
+        uses: actions/upload-artifact@v3
+        with:
+          name: deployment-files
+          path: |
+            docker-compose.prod.yml
+            helm-chart/
+          retention-days: 30
 
   # النشر على VPS أو خادم
   deploy:
@@ -258,95 +256,104 @@ jobs:
     runs-on: ubuntu-latest
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     
+    # تعريف جميع المتغيرات كبيئة
+    env:
+      SERVER_HOST: ${{ secrets.SERVER_HOST }}
+      SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      MONGO_USER: ${{ secrets.MONGO_USER }}
+      MONGO_PASS: ${{ secrets.MONGO_PASS }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      DOCKER_COMPOSE_CONTENT: ${{ secrets.DOCKER_COMPOSE_CONTENT }}
+
     steps:
-    - name: ⬇️ تحميل ملفات النشر
-      uses: actions/download-artifact@v3
-      with:
-        name: deployment-files
-    
-    - name: 🔐 إعداد مفاتيح SSH
-      run: |
-        mkdir -p ~/.ssh
-        echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-        chmod 600 ~/.ssh/id_rsa
-        ssh-keyscan -H ${{ secrets.SERVER_HOST }} >> ~/.ssh/known_hosts
-    
-    - name: 🚀 النشر على الخادم
-      uses: appleboy/ssh-action@v0.1.5
-      with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          # إنشاء مجلد المشروع
-          mkdir -p /opt/education-rating-system
-          cd /opt/education-rating-system
-          
-          # نسخ ملفات النشر
-          cat > docker-compose.yml << 'EOF'
-          ${{ secrets.DOCKER_COMPOSE_CONTENT }}
-          EOF
-          
-          # إنشاء ملف .env
-          cat > .env << EOF
-          NODE_ENV=production
-          PORT=5000
-          MONGODB_URI=mongodb://${{ secrets.MONGO_USER }}:${{ secrets.MONGO_PASS }}@mongodb:27017/education_rating?authSource=admin
-          JWT_SECRET=${{ secrets.JWT_SECRET }}
-          MONGO_INITDB_ROOT_USERNAME=${{ secrets.MONGO_USER }}
-          MONGO_INITDB_ROOT_PASSWORD=${{ secrets.MONGO_PASS }}
-          EOF
-          
-          # سحب أحدث الصور
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:latest
-          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:latest
-          
-          # إيقاف وإعادة تشغيل الحاويات
-          docker-compose down
-          docker-compose up -d --remove-orphans
-          
-          # تنظيف الصور القديمة
-          docker system prune -f --filter "until=24h"
-          
-          # التحقق من حالة الخدمات
-          sleep 10
-          docker-compose ps
-          
-          # تسجيل النشر
-          echo "✅ تم النشر بنجاح في $(date)" >> /opt/education-rating-system/deploy.log
+      - name: ⬇️ تحميل ملفات النشر
+        uses: actions/download-artifact@v3
+        with:
+          name: deployment-files
+
+      - name: 🔐 إعداد مفاتيح SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H $SERVER_HOST >> ~/.ssh/known_hosts
+
+      - name: 🚀 النشر على الخادم
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ env.SERVER_HOST }}
+          username: ${{ env.SERVER_USERNAME }}
+          key: ${{ env.SSH_PRIVATE_KEY }}
+          script: |
+            # إنشاء مجلد المشروع
+            mkdir -p /opt/education-rating-system
+            cd /opt/education-rating-system
+
+            # نسخ ملفات النشر
+            cat > docker-compose.yml << 'EOF'
+            $DOCKER_COMPOSE_CONTENT
+            EOF
+
+            # إنشاء ملف .env
+            cat > .env << EOF
+            NODE_ENV=production
+            PORT=5000
+            MONGODB_URI=mongodb://${MONGO_USER}:${MONGO_PASS}@mongodb:27017/education_rating?authSource=admin
+            JWT_SECRET=${JWT_SECRET}
+            MONGO_INITDB_ROOT_USERNAME=${MONGO_USER}
+            MONGO_INITDB_ROOT_PASSWORD=${MONGO_PASS}
+            EOF
+
+            # سحب أحدث الصور
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:latest
+            docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:latest
+
+            # إيقاف وإعادة تشغيل الحاويات
+            docker-compose down
+            docker-compose up -d --remove-orphans
+
+            # تنظيف الصور القديمة
+            docker system prune -f --filter "until=24h"
+
+            # التحقق من حالة الخدمات
+            sleep 10
+            docker-compose ps
+
+            # تسجيل النشر
+            echo "✅ تم النشر بنجاح في $(date)" >> /opt/education-rating-system/deploy.log
 
   # إنشاء الإصدار
   release:
     needs: [test, build-and-push, deploy]
     runs-on: ubuntu-latest
     if: github.event_name == 'release' && github.event.action == 'published'
-    
+
     steps:
-    - name: 🏷️ إنشاء إصدار Docker
-      run: |
-        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:latest
-        docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:latest ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:${{ github.event.release.tag_name }}
-        docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:${{ github.event.release.tag_name }}
-        
-        docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:latest
-        docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:latest ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ github.event.release.tag_name }}
-        docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ github.event.release.tag_name }}
-    
-    - name: 📋 تحديث Changelog
-      uses: requarks/changelog-action@v1
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        tag: ${{ github.event.release.tag_name }}
-    
-    - name: 🎉 إرسال إشعارات
-      uses: 8398a7/action-slack@v3
-      with:
-        status: ${{ job.status }}
-        channel: '#deployments'
-        author_name: 'GitHub Actions'
-        fields: repo,message,commit,author,action,eventName,ref,workflow,job,took
-      env:
-        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+      - name: 🏷️ إنشاء إصدار Docker
+        run: |
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:latest
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:latest ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:${{ github.event.release.tag_name }}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_BACKEND }}:${{ github.event.release.tag_name }}
+
+          docker pull ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:latest
+          docker tag ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:latest ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ github.event.release.tag_name }}
+          docker push ${{ env.REGISTRY }}/${{ env.IMAGE_NAME_FRONTEND }}:${{ github.event.release.tag_name }}
+
+      - name: 📋 تحديث Changelog
+        uses: requarks/changelog-action@v1
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          tag: ${{ github.event.release.tag_name }}
+
+      - name: 🎉 إرسال إشعارات Slack
+        uses: 8398a7/action-slack@v3
+        with:
+          status: ${{ job.status }}
+          channel: "#deployments"
+          author_name: "GitHub Actions"
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   # الاختبار بعد النشر
   post-deploy-test:
@@ -354,131 +361,146 @@ jobs:
     runs-on: ubuntu-latest
     if: always()
     
+    env:
+      SERVER_HOST: ${{ secrets.SERVER_HOST }}
+
     steps:
-    - name: 🔍 اختبار الاتصال بالـ API
-      run: |
-        sleep 30  # انتظار حتى يكون التطبيق جاهزاً
-        curl -f http://${{ secrets.SERVER_HOST }}:5000/ || exit 1
-        echo "✅ API يعمل بشكل صحيح"
-        
-        curl -f http://${{ secrets.SERVER_HOST }}/ || exit 1
-        echo "✅ Frontend يعمل بشكل صحيح"
-    
-    - name: 🧪 اختبار الوظائف الأساسية
-      run: |
-        # اختبار تسجيل الدخول
-        curl -X POST http://${{ secrets.SERVER_HOST }}:5000/api/auth/login \
-          -H "Content-Type: application/json" \
-          -d '{"email":"admin@edu-rating.com","password":"Admin123"}' \
-          -w "\nHTTP Status: %{http_code}\n" \
-          --fail || echo "⚠️ اختبار تسجيل الدخول فشل"
-        
-        # اختبار الحصول على المواد
-        curl -f http://${{ secrets.SERVER_HOST }}:5000/api/subjects || exit 1
-        echo "✅ اختبار المواد ناجح"
-    
-    - name: 📊 إرسال تقرير الصحة
-      uses: LouisBrunner/checks-action@v1.6.0
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        name: Health Check Report
-        conclusion: ${{ job.status == 'success' && 'success' || 'failure' }}
-        output: |
-          {
-            "summary": "تم إجراء اختبارات ما بعد النشر",
-            "text": "جميع الخدمات تعمل بشكل طبيعي"
-          }
+      - name: 🔍 اختبار الاتصال بالـ API
+        run: |
+          sleep 30 # انتظار حتى يكون التطبيق جاهزاً
+          curl -f http://$SERVER_HOST:5000/ || exit 1
+          echo "✅ API يعمل بشكل صحيح"
+
+          curl -f http://$SERVER_HOST/ || exit 1
+          echo "✅ Frontend يعمل بشكل صحيح"
+
+      - name: 🧪 اختبار الوظائف الأساسية
+        run: |
+          # اختبار تسجيل الدخول
+          curl -X POST http://$SERVER_HOST:5000/api/auth/login \
+            -H "Content-Type: application/json" \
+            -d '{"email":"admin@edu-rating.com","password":"Admin123"}' \
+            -w "\nHTTP Status: %{http_code}\n" \
+            --fail || echo "⚠️ اختبار تسجيل الدخول فشل"
+
+          # اختبار الحصول على المواد
+          curl -f http://$SERVER_HOST:5000/api/subjects || exit 1
+          echo "✅ اختبار المواد ناجح"
+
+      - name: 📊 إرسال تقرير الصحة
+        uses: LouisBrunner/checks-action@v1.6.0
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          name: "Health Check Report"
+          conclusion: ${{ job.status == 'success' && 'success' || 'failure' }}
+          output: |
+            {
+              "summary": "تم إجراء اختبارات ما بعد النشر",
+              "text": "جميع الخدمات تعمل بشكل طبيعي"
+            }
 
   # المراقبة والتنبيهات
   monitoring:
     runs-on: ubuntu-latest
     if: always()
     
+    env:
+      EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+      EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+      EMAIL_TO: ${{ secrets.EMAIL_TO }}
+      DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+
     steps:
-    - name: 📈 جمع المقاييس
-      run: |
-        # جمع معلومات عن حالة CI/CD
-        echo "📊 تقرير CI/CD"
-        echo "Workflow: ${{ github.workflow }}"
-        echo "Run ID: ${{ github.run_id }}"
-        echo "Status: ${{ job.status }}"
-        echo "Time: $(date)"
-        
-        # يمكن إضافة تكامل مع أدوات المراقبة هنا
-        # مثل: Prometheus, Grafana, New Relic, etc.
-    
-    - name: 📧 إرسال البريد الإلكتروني
-      if: failure()
-      uses: dawidd6/action-send-mail@v3
-      with:
-        server_address: smtp.gmail.com
-        server_port: 587
-        username: ${{ secrets.EMAIL_USERNAME }}
-        password: ${{ secrets.EMAIL_PASSWORD }}
-        subject: "❌ فشل CI/CD - نظام تقييم المصادر التعليمية"
-        to: ${{ secrets.EMAIL_TO }}
-        from: GitHub Actions
-        body: |
-          فشل عملية CI/CD للمشروع: ${{ github.repository }}
-          
-          Workflow: ${{ github.workflow }}
-          Run ID: ${{ github.run_id }}
-          الرابط: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-          
-          تفاصيل الفشل: ${{ job.status }}
-          
-          -- 
-          نظام تقييم المصادر التعليمية
-          جامعة الجزائر - كلية الإعلام الآلي
-          
-    - name: 🔔 إرسال إشعار Discord
-      if: failure()
-      uses: sarisia/actions-status-discord@v1
-      with:
-        webhook: ${{ secrets.DISCORD_WEBHOOK }}
-        title: "❌ فشل CI/CD"
-        description: "فشل عملية CI/CD للمشروع: ${{ github.repository }}"
-        color: 0xFF0000
-        url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
-        username: "GitHub Actions Bot"
-        avatar: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
+      - name: 📈 جمع المقاييس
+        run: |
+          # جمع معلومات عن حالة CI/CD
+          echo "📊 تقرير CI/CD"
+          echo "Workflow: ${{ github.workflow }}"
+          echo "Run ID: ${{ github.run_id }}"
+          echo "Status: ${{ job.status }}"
+          echo "Time: $(date)"
+
+      - name: 📧 إرسال البريد الإلكتروني
+        if: failure()
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 587
+          username: ${{ env.EMAIL_USERNAME }}
+          password: ${{ env.EMAIL_PASSWORD }}
+          subject: "❌ فشل CI/CD - نظام تقييم المصادر التعليمية"
+          to: ${{ env.EMAIL_TO }}
+          from: "GitHub Actions"
+          body: |
+            فشل عملية CI/CD للمشروع: ${{ github.repository }}
+
+            Workflow: ${{ github.workflow }}
+            Run ID: ${{ github.run_id }}
+            الرابط: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+
+            تفاصيل الفشل: ${{ job.status }}
+
+            -- 
+            نظام تقييم المصادر التعليمية
+            جامعة الجزائر - كلية الإعلام الآلي
+
+      - name: 🔔 إرسال إشعار Discord
+        if: failure()
+        uses: sarisia/actions-status-discord@v1
+        with:
+          webhook: ${{ env.DISCORD_WEBHOOK }}
+          title: "❌ فشل CI/CD"
+          description: "فشل عملية CI/CD للمشروع: ${{ github.repository }}"
+          color: 0xFF0000
+          url: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          username: "GitHub Actions Bot"
+          avatar_url: "https://github.githubassets.com/images/modules/logos_page/GitHub-Mark.png"
 
   # نسخ احتياطي تلقائي
   backup:
     runs-on: ubuntu-latest
     if: github.event_name == 'schedule'
     
+    env:
+      SERVER_HOST: ${{ secrets.SERVER_HOST }}
+      SERVER_USERNAME: ${{ secrets.SERVER_USERNAME }}
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      MONGO_USER: ${{ secrets.MONGO_USER }}
+      MONGO_PASS: ${{ secrets.MONGO_PASS }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID || '' }}
+      AWS_S3_BUCKET: ${{ secrets.AWS_S3_BUCKET || '' }}
+
     steps:
-    - name: 💾 النسخ الاحتياطي لقاعدة البيانات
-      uses: appleboy/ssh-action@v0.1.5
-      with:
-        host: ${{ secrets.SERVER_HOST }}
-        username: ${{ secrets.SERVER_USERNAME }}
-        key: ${{ secrets.SSH_PRIVATE_KEY }}
-        script: |
-          cd /opt/education-rating-system
-          docker-compose exec -T mongodb mongodump \
-            --username ${{ secrets.MONGO_USER }} \
-            --password ${{ secrets.MONGO_PASS }} \
-            --authenticationDatabase admin \
-            --db education_rating \
-            --out /backup/$(date +%Y%m%d_%H%M%S)
-          
-          # رفع النسخة الاحتياطية إلى S3 (اختياري)
-          if [ -n "${{ secrets.AWS_ACCESS_KEY_ID }}" ]; then
-            docker-compose exec -T mongodb tar -czf - /backup | \
-            aws s3 cp - s3://${{ secrets.AWS_S3_BUCKET }}/backup-$(date +%Y%m%d).tar.gz
-          fi
-          
-          # حفظ آخر 7 نسخ احتياطية فقط
-          docker-compose exec -T mongodb find /backup -type d -mtime +7 -exec rm -rf {} +
-          
-          echo "✅ تم النسخ الاحتياطي بنجاح"
-    
-    - name: 📋 تحديث حالة النسخ الاحتياطي
-      run: |
-        echo "📅 النسخ الاحتياطي التلقائي تم في $(date)" >> backup.log
-        echo "✅ تم بنجاح" >> backup.log
+      - name: 💾 النسخ الاحتياطي لقاعدة البيانات
+        uses: appleboy/ssh-action@v0.1.5
+        with:
+          host: ${{ env.SERVER_HOST }}
+          username: ${{ env.SERVER_USERNAME }}
+          key: ${{ env.SSH_PRIVATE_KEY }}
+          script: |
+            cd /opt/education-rating-system
+            docker-compose exec -T mongodb mongodump \
+              --username $MONGO_USER \
+              --password $MONGO_PASS \
+              --authenticationDatabase admin \
+              --db education_rating \
+              --out /backup/$(date +%Y%m%d_%H%M%S)
+
+            # رفع النسخة الاحتياطية إلى S3 (اختياري)
+            if [ -n "$AWS_ACCESS_KEY_ID" ]; then
+              docker-compose exec -T mongodb tar -czf - /backup | \
+              aws s3 cp - s3://$AWS_S3_BUCKET/backup-$(date +%Y%m%d).tar.gz
+            fi
+
+            # حفظ آخر 7 نسخ احتياطية فقط
+            docker-compose exec -T mongodb find /backup -type d -mtime +7 -exec rm -rf {} +
+
+            echo "✅ تم النسخ الاحتياطي بنجاح"
+
+      - name: 📋 تحديث حالة النسخ الاحتياطي
+        run: |
+          echo "📅 النسخ الاحتياطي التلقائي تم في $(date)" >> backup.log
+          echo "✅ تم بنجاح" >> backup.log
 
 # إعدادات إضافية للمسارات
 concurrency:

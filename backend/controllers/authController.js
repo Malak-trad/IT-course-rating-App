@@ -45,17 +45,21 @@ exports.register = async (req, res) => {
     user.lastLogin = Date.now();
     await user.save();
 
+    // إزالة كلمة المرور من كائن المستخدم قبل الإرسال
+    const userWithoutPassword = user.toObject();
+    delete userWithoutPassword.password;
+
     res.status(201).json({
       message: 'تم إنشاء الحساب بنجاح',
       token,
       user: {
-        id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        studentId: user.studentId,
-        level: user.level,
-        role: user.role,
-        avatar: user.avatar
+        id: userWithoutPassword._id,
+        fullName: userWithoutPassword.fullName,
+        email: userWithoutPassword.email,
+        studentId: userWithoutPassword.studentId,
+        level: userWithoutPassword.level,
+        role: userWithoutPassword.role,
+        avatar: userWithoutPassword.avatar
       }
     });
   } catch (error) {
@@ -92,17 +96,21 @@ exports.login = async (req, res) => {
     user.lastLogin = Date.now();
     await user.save();
 
+    // إزالة كلمة المرور من كائن المستخدم قبل الإرسال
+    const userWithoutPassword = user.toObject();
+    delete userWithoutPassword.password;
+
     res.json({
       message: 'تم تسجيل الدخول بنجاح',
       token,
       user: {
-        id: user._id,
-        fullName: user.fullName,
-        email: user.email,
-        studentId: user.studentId,
-        level: user.level,
-        role: user.role,
-        avatar: user.avatar
+        id: userWithoutPassword._id,
+        fullName: userWithoutPassword.fullName,
+        email: userWithoutPassword.email,
+        studentId: userWithoutPassword.studentId,
+        level: userWithoutPassword.level,
+        role: userWithoutPassword.role,
+        avatar: userWithoutPassword.avatar
       }
     });
   } catch (error) {
@@ -131,6 +139,9 @@ exports.updateProfile = async (req, res) => {
   try {
     const updates = Object.keys(req.body);
     const allowedUpdates = ['fullName', 'level', 'avatar'];
+    if (updates.includes('email') || updates.includes('password')) {
+      return res.status(400).json({ error: 'لا يمكن تحديث البريد الإلكتروني أو كلمة المرور من هذا المسار' });
+    }
     const isValidOperation = updates.every(update => allowedUpdates.includes(update));
 
     if (!isValidOperation) {
